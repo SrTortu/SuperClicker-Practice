@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2278757983274575428}
   - component: {fileID: 8346510172244212371}
   m_Layer: 0
-  m_Name: Agent1
+  m_Name: Angel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -4,51 +4,71 @@ using DG.Tweening;
 
 public class Agent : MonoBehaviour
 {
-	#region Properties
-	public SlotButtonUI destiny { get; set; }
-	[field: SerializeField] public float RepeatRate { get; set; }
-	#endregion
+    #region Enum
 
-	#region Fields
-	#endregion
-
-	#region Unity Callbacks
-	// Start is called before the first frame update
-	void Start()
+    public enum AgentTypeEnum
     {
-		Movement();
-		InvokeRepeating(nameof(Click), 1, RepeatRate);
-		SlotButtonUI.OnSlotClicked += SetDestiny;
+        Angel,
+        Demon,
+        Wizzard,
+        Fairy
     }
 
-	private void SetDestiny(SlotButtonUI newDestiny)
-	{
-		destiny = newDestiny;
-		Movement();
-	}
+    #endregion
 
-	private void Click()
-	{
-		destiny.Click(1, true);
-		//Only Angel
-		if (destiny.ClicksLeft < 0)
-			Destroy(gameObject);
-	}
+    #region Properties
 
-	// Update is called once per frame
-	void Update()
+    public SlotButtonUI destiny { get; set; }
+    [field: SerializeField] public AgentTypeEnum AgentType { get; set; }
+    [field: SerializeField] public float RepeatRate { get; set; }
+
+    #endregion
+
+    #region Fields
+
+    #endregion
+
+    #region Unity Callbacks
+
+    // Start is called before the first frame update
+    void Start()
     {
-        
+        Movement();
+        InvokeRepeating(nameof(Click), 1, RepeatRate);
+        SlotButtonUI.OnSlotClicked += SetDestiny;
     }
-	#endregion
 
-	#region Public Methods
-	#endregion
+    private void OnDestroy()
+    {
+        SlotButtonUI.OnSlotClicked -= SetDestiny;
+    }
 
-	#region Private Methods
-	protected void Movement()
-	{
-		transform.DOMove(destiny.transform.position, 1);
-	}
-	#endregion   
+    private void SetDestiny(SlotButtonUI newDestiny)
+    {
+        destiny = newDestiny;
+        Movement();
+    }
+
+    private void Click()
+    {
+        destiny.Click(1, true);
+
+        if (AgentType == AgentTypeEnum.Angel)
+        {
+            if (destiny.ClicksLeft < 0)
+                Destroy(gameObject);
+        }
+    }
+
+    #endregion
+    
+
+    #region Private Methods
+    protected void Movement()
+    {
+        if(destiny != null)
+        transform.DOMove(destiny.transform.position, 1);
+    }
+
+    #endregion
 }
