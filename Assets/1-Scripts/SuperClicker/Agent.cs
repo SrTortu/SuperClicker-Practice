@@ -45,29 +45,37 @@ public class Agent : MonoBehaviour
 
     private void SetDestiny(SlotButtonUI newDestiny)
     {
-        destiny = newDestiny;
-        Movement();
+        if (AgentType == AgentTypeEnum.Angel)
+        {
+            destiny = newDestiny;
+            Movement();
+        }
     }
 
     private void Click()
     {
-        destiny.Click(1, true);
-
         if (AgentType == AgentTypeEnum.Angel)
         {
+            destiny.Click((int)(GameController.Instance.ClickRatio*0.1), true);
+        }
+
+        if (AgentType == AgentTypeEnum.Demon)
+        {
+            destiny.Click((int)(GameController.Instance.ClickRatio*2), true);
             if (destiny.ClicksLeft < 0)
                 Destroy(gameObject);
         }
     }
 
     #endregion
-    
+
 
     #region Private Methods
+
     protected void Movement()
     {
-        if(destiny != null)
-        transform.DOMove(destiny.transform.position, 1);
+        if (destiny != null)
+            transform.DOMove(destiny.transform.position, 1);
     }
 
     #endregion

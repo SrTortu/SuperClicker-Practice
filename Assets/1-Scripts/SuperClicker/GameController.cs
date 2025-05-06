@@ -5,104 +5,125 @@ using DG.Tweening;
 
 public class GameController : MonoBehaviour
 {
-	#region Properties
-	[field:SerializeField] public float ClickRatio { get; set; }
-	[field:SerializeField] public PoolSystem Pool { get; set; }
-	#endregion
+    #region Properties
 
-	#region Fields
-	[SerializeField] private Agent[] _agents;
-	[SerializeField] private TextMeshProUGUI _rewardText;
-	[SerializeField] private TextMeshProUGUI _clicksText;
+    [field: SerializeField] public float ClickRatio { get; set; }
+    public static GameController Instance { get; private set; }
+    [field: SerializeField] public PoolSystem Pool { get; set; }
 
-	[SerializeField] private ParticleSystem _particlesRain;
-	#endregion
+    #endregion
 
-	#region Unity Callbacks
-	// Start is called before the first frame update
-	void Start()
+    #region Fields
+
+    [SerializeField] private Agent[] _agents;
+    [SerializeField] private TextMeshProUGUI _rewardText;
+    [SerializeField] private TextMeshProUGUI _clicksText;
+
+    [SerializeField] private ParticleSystem _particlesRain;
+
+    #endregion
+
+    #region Unity Callbacks
+
+    private void Awake()
     {
-		SlotButtonUI.OnSlotReward += GetReward;
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
-	private void OnDestroy()
-	{
-		SlotButtonUI.OnSlotReward -= GetReward;
-	}
 
-	#endregion
+    void Start()
+    {
+        SlotButtonUI.OnSlotReward += GetReward;
+    }
 
-	#region Public Methods
-	public void RainParticles()
-	{
-		_particlesRain.Emit(Mathf.Clamp((int)ClickRatio, 0, 13));
-	}
-	#endregion
+    private void OnDestroy()
+    {
+        SlotButtonUI.OnSlotReward -= GetReward;
+    }
 
-	#region Private Methods
-	/***
- *       ____    U _____ u                 _       ____     ____    _    
- *    U |  _"\ u \| ___"|/__        __ U  /"\  uU |  _"\ u |  _"\ U|"|u  
- *     \| |_) |/  |  _|"  \"\      /"/  \/ _ \/  \| |_) |//| | | |\| |/  
- *      |  _ <    | |___  /\ \ /\ / /\  / ___ \   |  _ <  U| |_| |\|_|   
- *      |_| \_\   |_____|U  \ V  V /  U/_/   \_\  |_| \_\  |____/ u(_)   
- *      //   \\_  <<   >>.-,_\ /\ /_,-. \\    >>  //   \\_  |||_   |||_  
- *     (__)  (__)(__) (__)\_)-'  '-(_/ (__)  (__)(__)  (__)(__)_) (__)_) 
- */
-	private void GetReward(Reward reward)
-	{
-		ShowReward(reward);
+    #endregion
 
-		//Apply rewards
-		if (reward.RewardType == RewardType.Plus)
-		{
-			ClickRatio += reward.Value;
-			_clicksText.text = "x" + ClickRatio;
-			return;
-		}
-		
-		if (reward.RewardType == RewardType.Multi)
-		{
-			ClickRatio *= reward.Value;
-			_clicksText.text = "x" + ClickRatio;
-			return;
-		}
+    #region Public Methods
 
-		if (reward.RewardType == RewardType.Agent)
-		{
-			Agent newAgent = Instantiate(_agents[(int)reward.Value],transform.position, Quaternion.identity);
-			newAgent.destiny = reward.ObjectReward;
+    public void RainParticles()
+    {
+        _particlesRain.Emit(Mathf.Clamp((int)ClickRatio, 0, 13));
+    }
 
-			return;
-		}
-	}
+    #endregion
 
-	private void ShowReward(Reward reward)
-	{
-		//Initialziation
-		if (!_rewardText.gameObject.activeSelf)
-		{
-			_rewardText.gameObject.SetActive(true);
-			_rewardText.transform.localScale = Vector3.zero;
-		}
+    #region Private Methods
 
-		//Update text
-		_rewardText.text = "REWARD\n " + reward.RewardType + reward.Value + " Clicks";
+    /***
+     *       ____    U _____ u                 _       ____     ____    _
+     *    U |  _"\ u \| ___"|/__        __ U  /"\  uU |  _"\ u |  _"\ U|"|u
+     *     \| |_) |/  |  _|"  \"\      /"/  \/ _ \/  \| |_) |//| | | |\| |/
+     *      |  _ <    | |___  /\ \ /\ / /\  / ___ \   |  _ <  U| |_| |\|_|
+     *      |_| \_\   |_____|U  \ V  V /  U/_/   \_\  |_| \_\  |____/ u(_)
+     *      //   \\_  <<   >>.-,_\ /\ /_,-. \\    >>  //   \\_  |||_   |||_
+     *     (__)  (__)(__) (__)\_)-'  '-(_/ (__)  (__)(__)  (__)(__)_) (__)_)
+     */
+    private void GetReward(Reward reward)
+    {
+        ShowReward(reward);
 
-		// Crear una secuencia
-		Sequence mySequence = DOTween.Sequence();
+        //Apply rewards
+        if (reward.RewardType == RewardType.Plus)
+        {
+            ClickRatio += reward.Value;
+            _clicksText.text = "x" + ClickRatio;
+            return;
+        }
 
-		// Añadir el primer efecto de escala
-		mySequence.Append(_rewardText.transform.DOScale(1, 1));
+        if (reward.RewardType == RewardType.Multi)
+        {
+            ClickRatio *= reward.Value;
+            _clicksText.text = "x" + ClickRatio;
+            return;
+        }
 
-		// Añadir el efecto de sacudida en la rotación
-		mySequence.Append(_rewardText.transform.DOShakeRotation(1, new Vector3(0, 0, 30)));
+        if (reward.RewardType == RewardType.Agent)
+        {
+            Agent newAgent = Instantiate(_agents[(int)reward.Value], transform.position, Quaternion.identity);
+            newAgent.destiny = reward.ObjectReward;
 
-		// Añadir el segundo efecto de escala
-		mySequence.Append(_rewardText.transform.DOScale(0, 1));
+            return;
+        }
+    }
 
-		// Iniciar la secuencia
-		mySequence.Play();
+    private void ShowReward(Reward reward)
+    {
+        //Initialziation
+        if (!_rewardText.gameObject.activeSelf)
+        {
+            _rewardText.gameObject.SetActive(true);
+            _rewardText.transform.localScale = Vector3.zero;
+        }
 
-	}
-	#endregion
+        //Update text
+        _rewardText.text = "REWARD\n " + reward.RewardType + reward.Value + " Clicks";
+
+        // Crear una secuencia
+        Sequence mySequence = DOTween.Sequence();
+
+        // Aï¿½adir el primer efecto de escala
+        mySequence.Append(_rewardText.transform.DOScale(1, 1));
+
+        // Aï¿½adir el efecto de sacudida en la rotaciï¿½n
+        mySequence.Append(_rewardText.transform.DOShakeRotation(1, new Vector3(0, 0, 30)));
+
+        // Aï¿½adir el segundo efecto de escala
+        mySequence.Append(_rewardText.transform.DOScale(0, 1));
+
+        // Iniciar la secuencia
+        mySequence.Play();
+    }
+
+    #endregion
 }
