@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 094820952dffcb34aa766032216220a7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <AgentType>k__BackingField: 3
   <RepeatRate>k__BackingField: 1
 --- !u!212 &2278757983274575428
 SpriteRenderer:

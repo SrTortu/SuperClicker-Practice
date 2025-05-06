@@ -5,55 +5,40 @@ using System.Collections;
 
 public class PoolSystem : MonoBehaviour
 {
-	#region Properties
-	#endregion
+    #region Fields
 
-	#region Fields
-	[SerializeField] private PointsElementUI _pointsPrefab;
-	private Queue<PointsElementUI> _pointsPool = new Queue<PointsElementUI>();
-	#endregion
+    [SerializeField] private PointsElementUI _pointsPrefab;
+    private Queue<PointsElementUI> _pointsPool = new Queue<PointsElementUI>();
 
-	#region Unity Callbacks
-	// Start is called before the first frame update
-	void Start()
+    #endregion
+
+
+    #region Public Methods
+
+    public PointsElementUI GetPoints()
     {
-        
+        if (_pointsPool.Count > 0)
+        {
+            return _pointsPool.Dequeue();
+        }
+        else
+        {
+            return Instantiate(_pointsPrefab);
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    public void AddToPool(PointsElementUI pointsObject, float duration)
     {
-        
+        StartCoroutine(DoAddPool(pointsObject, duration));
     }
-	#endregion
 
-	#region Public Methods
-	public PointsElementUI GetPoints()
-	{
-		if(_pointsPool.Count > 0)
-		{
-			return _pointsPool.Dequeue();
-		}
-		else
-		{
-			return Instantiate(_pointsPrefab);
-		}
-	}
+    private IEnumerator DoAddPool(PointsElementUI pointsObject, float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        pointsObject.gameObject.SetActive(false);
+        _pointsPool.Enqueue(pointsObject);
+        Debug.Log("Total pool objects: " + _pointsPool.Count);
+    }
 
-	public void AddToPool(PointsElementUI pointsObject, float duration)
-	{
-		StartCoroutine(DoAddPool(pointsObject, duration));
-	}
-
-	private IEnumerator DoAddPool(PointsElementUI pointsObject, float duration)
-	{
-		yield return new WaitForSeconds(duration);
-		pointsObject.gameObject.SetActive(false);
-		_pointsPool.Enqueue(pointsObject);
-		Debug.Log("Total pool objects: " + _pointsPool.Count);
-	}
-	#endregion
-
-	#region Private Methods
-	#endregion
+    #endregion
 }

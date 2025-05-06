@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using DG.Tweening;
+using Random = UnityEngine.Random;
 
 public class Agent : MonoBehaviour
 {
@@ -26,6 +27,11 @@ public class Agent : MonoBehaviour
 
     #region Fields
 
+    private float radius = 150f;
+    private float speed = 4f;
+    private float angle = 0;
+    private Vector3 _mousePos;
+
     #endregion
 
     #region Unity Callbacks
@@ -36,12 +42,25 @@ public class Agent : MonoBehaviour
         Movement();
         InvokeRepeating(nameof(Click), 1, RepeatRate);
         SlotButtonUI.OnSlotClicked += SetDestiny;
+        ClickButtonLeft.OnRightClick += RightClick;
+    }
+
+    private void Update()
+    {
+        if (AgentType == AgentTypeEnum.Fairy)
+        {
+            OrbitAroundMouse();
+        }
     }
 
     private void OnDestroy()
     {
         SlotButtonUI.OnSlotClicked -= SetDestiny;
     }
+
+    #endregion
+
+    #region Private Methods
 
     private void SetDestiny(SlotButtonUI newDestiny)
     {
@@ -56,26 +75,47 @@ public class Agent : MonoBehaviour
     {
         if (AgentType == AgentTypeEnum.Angel)
         {
-            destiny.Click((int)(GameController.Instance.ClickRatio*0.1), true);
+            destiny.Click((int)(GameController.Instance.ClickRatio * 0.1), true);
         }
 
         if (AgentType == AgentTypeEnum.Demon)
         {
-            destiny.Click((int)(GameController.Instance.ClickRatio*2), true);
+            destiny.Click((int)(GameController.Instance.ClickRatio * 2), true);
             if (destiny.ClicksLeft < 0)
                 Destroy(gameObject);
         }
     }
 
-    #endregion
+    private void RightClick()
+    {
+        if (AgentType == AgentTypeEnum.Fairy)
+        {
+            destiny.Click((int)(GameController.Instance.ClickRatio * 2), true);
+        }
+    }
 
 
-    #region Private Methods
-
-    protected void Movement()
+    protected void Movement(bool followClick = false)
     {
         if (destiny != null)
             transform.DOMove(destiny.transform.position, 1);
+    }
+
+    void OrbitAroundMouse()
+    {
+        // Obtener la posición del mouse en el mundo 2D
+        _mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        _mousePos.z = 0f; // Asegurarnos de que la coordenada Z sea 0 para 2D
+
+        // Incrementar el ángulo para el movimiento circular
+        angle += Random.Range(0,speed) * Time.deltaTime; // `Time.deltaTime` para un movimiento consistente en el tiempo
+
+        // Calcular la nueva posición del agente en un círculo alrededor del mouse
+        float x = Mathf.Cos(angle) * radius;
+        float y = Mathf.Sin(angle) * radius;
+
+        // Actualizar la posición del agente (en un círculo alrededor del mouse)
+        transform.position = new Vector3(_mousePos.x + x, _mousePos.y + y, 0f);
     }
 
     #endregion

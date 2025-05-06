@@ -80,6 +80,7 @@ public class SlotButtonUI : MonoBehaviour
 
         _clickButton.onClick.AddListener(Click);
 
+
         //_clickButton.onClick.AddListener(() =>
         //{
         //	int clickRatio = Mathf.RoundToInt(_game.ClickRatio);
@@ -88,7 +89,7 @@ public class SlotButtonUI : MonoBehaviour
 
         RefreshClicksText();
     }
-    
+
     private void Initialize()
     {
         ClicksLeft = _initialClics;
