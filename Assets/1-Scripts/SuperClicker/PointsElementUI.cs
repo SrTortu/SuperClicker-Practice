@@ -38,7 +38,7 @@ public class PointsElementUI : MonoBehaviour
 		//Color Fade Out
 		_clicksText.DOColor(new Color(0, 0, 0, 0), _duration);
 
-		// Par·metros del movimiento sinusoidal
+		// Par√°metros del movimiento sinusoidal
 		_game.Pool.AddToPool(this, _duration);
 	}
 

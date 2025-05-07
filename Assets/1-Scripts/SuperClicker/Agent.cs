@@ -30,6 +30,7 @@ public class Agent : MonoBehaviour
     private float radius = 150f;
     private float speed = 4f;
     private float angle = 0;
+    private bool isOrbiting = true;
     private Vector3 _mousePos;
 
     #endregion
@@ -43,13 +44,15 @@ public class Agent : MonoBehaviour
         InvokeRepeating(nameof(Click), 1, RepeatRate);
         SlotButtonUI.OnSlotClicked += SetDestiny;
         ClickButtonLeft.OnRightClick += RightClick;
+        FairyResetButton.OnSlotClicked += FairyReturn;
     }
 
     private void Update()
     {
         if (AgentType == AgentTypeEnum.Fairy)
         {
-            OrbitAroundMouse();
+            if (isOrbiting)
+                OrbitAroundMouse();
         }
     }
 
@@ -84,31 +87,44 @@ public class Agent : MonoBehaviour
             if (destiny.ClicksLeft < 0)
                 Destroy(gameObject);
         }
-    }
-
-    private void RightClick()
-    {
         if (AgentType == AgentTypeEnum.Fairy)
         {
+            if(!isOrbiting)
             destiny.Click((int)(GameController.Instance.ClickRatio * 2), true);
         }
     }
 
+    private void RightClick(SlotButtonUI slotButtonUI)
+    {
+        if (AgentType == AgentTypeEnum.Fairy)
+        { 
+            if (isOrbiting)
+            {
+                isOrbiting = false;
+                destiny = slotButtonUI;
+                Movement();
+                Debug.Log("RightClick");
+                
+            }
+        }
+    }
 
-    protected void Movement(bool followClick = false)
+
+    protected void Movement()
     {
         if (destiny != null)
             transform.DOMove(destiny.transform.position, 1);
     }
 
-    void OrbitAroundMouse()
+    private void OrbitAroundMouse()
     {
         // Obtener la posición del mouse en el mundo 2D
         _mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         _mousePos.z = 0f; // Asegurarnos de que la coordenada Z sea 0 para 2D
 
         // Incrementar el ángulo para el movimiento circular
-        angle += Random.Range(0,speed) * Time.deltaTime; // `Time.deltaTime` para un movimiento consistente en el tiempo
+        angle += Random.Range(0, speed) *
+                 Time.deltaTime; // `Time.deltaTime` para un movimiento consistente en el tiempo
 
         // Calcular la nueva posición del agente en un círculo alrededor del mouse
         float x = Mathf.Cos(angle) * radius;
@@ -118,5 +134,9 @@ public class Agent : MonoBehaviour
         transform.position = new Vector3(_mousePos.x + x, _mousePos.y + y, 0f);
     }
 
+    private void FairyReturn()
+    {
+        isOrbiting = true;
+    }
     #endregion
 }

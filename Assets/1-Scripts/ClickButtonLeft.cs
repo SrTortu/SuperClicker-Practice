@@ -9,12 +9,13 @@ public class ClickButtonLeft : MonoBehaviour, IPointerClickHandler
 {
     #region Propherties
     
-    public static event Action OnRightClick;
+    public static event Action<SlotButtonUI> OnRightClick;
 
     #endregion
     #region Fields
 
-    private Button button;
+    private Button _button;
+    private SlotButtonUI _slotButton;
 
     #endregion
 
@@ -22,14 +23,15 @@ public class ClickButtonLeft : MonoBehaviour, IPointerClickHandler
 
     void Start()
     {
-        button = GetComponent<Button>();
+        _button = GetComponent<Button>();
+        _slotButton = GetComponent<SlotButtonUI>();
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Right)
         {
-            OnRightClick?.Invoke();
+            OnRightClick?.Invoke(_slotButton);
         }
     }
 

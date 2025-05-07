@@ -6632,11 +6632,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e66a3ab4de5cd234286a0ed105740670, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <ClickRatio>k__BackingField: 100
+  <ClickRatio>k__BackingField: 50
   <Pool>k__BackingField: {fileID: 2006130957}
   _agents:
   - {fileID: 4063764471889246418, guid: 45bf8ccbc51cba840b457546418c3e9b, type: 3}
   - {fileID: -4108443168702843362, guid: 8ac2af637d29d6c4495fc84eaf70216b, type: 3}
+  - {fileID: 3128096378246945999, guid: 5801957754ae942448c5c92fb731e313, type: 3}
   _rewardText: {fileID: 1007179591}
   _clicksText: {fileID: 2041800782}
   _particlesRain: {fileID: 1870281907}
