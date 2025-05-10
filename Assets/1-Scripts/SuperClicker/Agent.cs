@@ -1,6 +1,8 @@
 using UnityEngine;
 using System;
+using System.Collections;
 using DG.Tweening;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class Agent : MonoBehaviour
@@ -30,7 +32,10 @@ public class Agent : MonoBehaviour
     private float radius = 150f;
     private float speed = 4f;
     private float angle = 0;
-    private bool isOrbiting = true;
+    private bool _isOrbiting = true;
+    private bool _isClicked = false;
+    private bool _isWizardMove = true;
+    private WizardClickController _wizardClickController;
     private Vector3 _mousePos;
 
     #endregion
@@ -45,13 +50,14 @@ public class Agent : MonoBehaviour
         SlotButtonUI.OnSlotClicked += SetDestiny;
         ClickButtonLeft.OnRightClick += RightClick;
         FairyResetButton.OnSlotClicked += FairyReturn;
+        WizardInitalite();
     }
 
     private void Update()
     {
         if (AgentType == AgentTypeEnum.Fairy)
         {
-            if (isOrbiting)
+            if (_isOrbiting)
                 OrbitAroundMouse();
         }
     }
@@ -87,24 +93,40 @@ public class Agent : MonoBehaviour
             if (destiny.ClicksLeft < 0)
                 Destroy(gameObject);
         }
+
         if (AgentType == AgentTypeEnum.Fairy)
         {
-            if(!isOrbiting)
-            destiny.Click((int)(GameController.Instance.ClickRatio * 2), true);
+            if (!_isOrbiting)
+                destiny.Click((int)(GameController.Instance.ClickRatio * 2), true);
+        }
+
+        if (AgentType == AgentTypeEnum.Wizzard)
+        {
+            if (_isClicked)
+            {
+                if (_isWizardMove)
+                {
+                    destiny = GameController.Instance.GetLowSlotButtonUI();
+                    Movement();
+                    _isWizardMove = false;
+                }
+
+                destiny.Click((int)(GameController.Instance.ClickRatio * 2), true);
+                if (!destiny.IsUsable || destiny == null)
+                    Destroy(gameObject);
+            }
         }
     }
 
     private void RightClick(SlotButtonUI slotButtonUI)
     {
         if (AgentType == AgentTypeEnum.Fairy)
-        { 
-            if (isOrbiting)
+        {
+            if (_isOrbiting)
             {
-                isOrbiting = false;
+                _isOrbiting = false;
                 destiny = slotButtonUI;
                 Movement();
-                Debug.Log("RightClick");
-                
             }
         }
     }
@@ -118,25 +140,36 @@ public class Agent : MonoBehaviour
 
     private void OrbitAroundMouse()
     {
-        // Obtener la posición del mouse en el mundo 2D
         _mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        _mousePos.z = 0f; // Asegurarnos de que la coordenada Z sea 0 para 2D
 
         // Incrementar el ángulo para el movimiento circular
         angle += Random.Range(0, speed) *
-                 Time.deltaTime; // `Time.deltaTime` para un movimiento consistente en el tiempo
+                 Time.deltaTime;
 
         // Calcular la nueva posición del agente en un círculo alrededor del mouse
         float x = Mathf.Cos(angle) * radius;
         float y = Mathf.Sin(angle) * radius;
 
-        // Actualizar la posición del agente (en un círculo alrededor del mouse)
         transform.position = new Vector3(_mousePos.x + x, _mousePos.y + y, 0f);
     }
 
     private void FairyReturn()
     {
-        isOrbiting = true;
+        _isOrbiting = true;
     }
+
+    private void WizardInitalite()
+    {
+        if (AgentType == AgentTypeEnum.Wizzard)
+        {
+            _wizardClickController = GetComponent<WizardClickController>();
+            _wizardClickController.OnClick += () =>
+            {
+                _isClicked = true;
+                Click();
+            };
+        }
+    }
+
     #endregion
 }

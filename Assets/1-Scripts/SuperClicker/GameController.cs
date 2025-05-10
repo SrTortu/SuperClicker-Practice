@@ -1,7 +1,11 @@
 using UnityEngine;
 using System;
+using System.Collections;
 using TMPro;
 using DG.Tweening;
+using Unity.VisualScripting;
+using Random = UnityEngine.Random;
+using Sequence = DG.Tweening.Sequence;
 
 public class GameController : MonoBehaviour
 {
@@ -18,8 +22,8 @@ public class GameController : MonoBehaviour
     [SerializeField] private Agent[] _agents;
     [SerializeField] private TextMeshProUGUI _rewardText;
     [SerializeField] private TextMeshProUGUI _clicksText;
-
     [SerializeField] private ParticleSystem _particlesRain;
+    [SerializeField] private SlotButtonUI[] _slotButtons;
 
     #endregion
 
@@ -40,6 +44,7 @@ public class GameController : MonoBehaviour
     void Start()
     {
         SlotButtonUI.OnSlotReward += GetReward;
+        StartCoroutine(InstanciateWizzard());
     }
 
     private void OnDestroy()
@@ -54,6 +59,23 @@ public class GameController : MonoBehaviour
     public void RainParticles()
     {
         _particlesRain.Emit(Mathf.Clamp((int)ClickRatio, 0, 13));
+    }
+
+    public SlotButtonUI GetLowSlotButtonUI()
+    {
+        Debug.Log(_slotButtons.Length);
+        SlotButtonUI slotButtonUI = null;
+        for (int i = 0; i < _slotButtons.Length; i++)
+        {
+            if (_slotButtons[i].IsUsable)
+            {
+                slotButtonUI = _slotButtons[i];
+                Debug.Log(slotButtonUI);
+                break;
+            }
+        }
+
+        return slotButtonUI;
     }
 
     #endregion
@@ -123,6 +145,32 @@ public class GameController : MonoBehaviour
 
         // Iniciar la secuencia
         mySequence.Play();
+    }
+
+    IEnumerator InstanciateWizzard()
+    {
+        while(true)
+        {
+            Instantiate(_agents[3], GetRandomPosition(), Quaternion.identity); 
+            yield return new WaitForSeconds(2f);
+        }
+            
+        
+    }
+    private Vector2 GetRandomPosition()
+    {
+        float cameraHeight = Camera.main.orthographicSize * 2f;
+        float cameraWidth = cameraHeight * Camera.main.aspect;
+
+        float minX = Camera.main.transform.position.x - cameraWidth / 2f;
+        float maxX = Camera.main.transform.position.x + cameraWidth / 2f;
+        float minY = Camera.main.transform.position.y - cameraHeight / 2f;
+        float maxY = Camera.main.transform.position.y + cameraHeight / 2f;
+
+        Vector2 randomPosition = new Vector2(Random.Range(minX, maxX), Random.Range(minY, maxY));
+        gameObject.transform.position = randomPosition;
+        
+        return randomPosition;
     }
 
     #endregion

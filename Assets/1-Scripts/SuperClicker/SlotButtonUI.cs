@@ -10,6 +10,13 @@ public class SlotButtonUI : MonoBehaviour
 
     [field: SerializeField] public Reward Reward;
 
+    public bool IsUsable
+    {
+        get { return _isUsable; }
+        set { _isUsable = value; }
+
+    }
+
     public int ClicksLeft
     {
         get { return _clicksLeft; }
@@ -122,14 +129,16 @@ public class SlotButtonUI : MonoBehaviour
         }
     }
 
-    private void RefreshClicksText()
-    {
-        _clicksText.text = ClicksLeft.ToString();
-    }
+  
 
     #endregion
 
     #region Private Methods
+
+    private void RefreshClicksText()
+    {
+        _clicksText.text = ClicksLeft.ToString();
+    }
 
     private void Click()
     {

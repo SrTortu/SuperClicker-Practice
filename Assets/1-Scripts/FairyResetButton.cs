@@ -20,12 +20,7 @@ public class FairyResetButton : MonoBehaviour
     void Start()
     {
         _button = GetComponent<Button>();
-        _button.onClick.AddListener(Click);
-    }
-
-    private void Click()
-    {
-        OnSlotClicked?.Invoke();
+        _button.onClick.AddListener(() => OnSlotClicked?.Invoke());
     }
 
 }
