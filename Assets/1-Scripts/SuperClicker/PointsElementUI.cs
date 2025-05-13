@@ -11,15 +11,10 @@ public class PointsElementUI : MonoBehaviour
 	#region Fields
 	[SerializeField] private TextMeshProUGUI _clicksText;
 	[SerializeField] private float _duration = 3;
-	private GameController _game;
 	
 	#endregion
 
 	#region Unity Callbacks
-	void Awake()
-	{
-		_game = FindObjectOfType<GameController>();
-	}
 	// Start is called before the first frame update
 	void Start()
     {
@@ -30,7 +25,7 @@ public class PointsElementUI : MonoBehaviour
 	{
 		_clicksText.transform.Translate(Vector3.back);
 		//Set Clicks text
-		_clicksText.text = "+" + _game.ClickRatio.ToString();
+		_clicksText.text = "+" + GameController.Instance.ClickRatio.ToString();
 
 		//Movement
 		transform.DOMoveY(transform.position.y + UnityEngine.Random.Range(100, 500), _duration);
@@ -39,7 +34,7 @@ public class PointsElementUI : MonoBehaviour
 		_clicksText.DOColor(new Color(0, 0, 0, 0), _duration);
 
 		// Parámetros del movimiento sinusoidal
-		_game.Pool.AddToPool(this, _duration);
+		GameController.Instance.Pool.AddToPool(this, _duration);
 	}
 
 	// Update is called once per frame
@@ -49,6 +44,7 @@ public class PointsElementUI : MonoBehaviour
 		gameObject.SetActive(true);
 		transform.parent = transformClick;
 		transform.localPosition = Vector3.zero;
+		DOTween.Kill(transform.position);
 		DoEffect();
 	}
 	#endregion

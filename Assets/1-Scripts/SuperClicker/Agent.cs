@@ -35,8 +35,14 @@ public class Agent : MonoBehaviour
     private bool _isOrbiting = true;
     private bool _isClicked = false;
     private bool _isWizardMove = true;
+    private AudioSource _audioSource;
     private WizardClickController _wizardClickController;
     private Vector3 _mousePos;
+    private float _wizzardTimer = 0;
+    private bool _timerStarted = false;
+    private static bool _AchievementFairyAttack = true;
+    private static bool _AchievementFairyDust = true;
+    
 
     #endregion
 
@@ -45,6 +51,7 @@ public class Agent : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        _audioSource = GetComponent<AudioSource>();
         Movement();
         InvokeRepeating(nameof(Click), 1, RepeatRate);
         SlotButtonUI.OnSlotClicked += SetDestiny;
@@ -59,6 +66,12 @@ public class Agent : MonoBehaviour
         {
             if (_isOrbiting)
                 OrbitAroundMouse();
+        }
+
+        if (AgentType == AgentTypeEnum.Wizzard)
+        {
+            if (_timerStarted)
+            _wizzardTimer += Time.deltaTime;
         }
     }
 
@@ -90,7 +103,7 @@ public class Agent : MonoBehaviour
         if (AgentType == AgentTypeEnum.Demon)
         {
             destiny.Click((int)(GameController.Instance.ClickRatio * 2), true);
-            if (destiny.ClicksLeft < 0)
+            if (destiny.ClicksLeft < 0 || destiny == null)
                 Destroy(gameObject);
         }
 
@@ -109,10 +122,11 @@ public class Agent : MonoBehaviour
                     destiny = GameController.Instance.GetLowSlotButtonUI();
                     Movement();
                     _isWizardMove = false;
+                    _timerStarted = true;
                 }
 
-                destiny.Click((int)(GameController.Instance.ClickRatio * 2), true);
-                if (!destiny.IsUsable || destiny == null)
+                destiny.Click((int)(GameController.Instance.ClickRatio * 0.1), true);
+                if (!destiny.IsUsable || destiny == null || _wizzardTimer > 15f)
                     Destroy(gameObject);
             }
         }
@@ -120,6 +134,7 @@ public class Agent : MonoBehaviour
 
     private void RightClick(SlotButtonUI slotButtonUI)
     {
+            
         if (AgentType == AgentTypeEnum.Fairy)
         {
             if (_isOrbiting)
@@ -127,6 +142,12 @@ public class Agent : MonoBehaviour
                 _isOrbiting = false;
                 destiny = slotButtonUI;
                 Movement();
+                _audioSource.Play();
+                if (_AchievementFairyAttack)
+                {
+                    AchievementManager.Instance.UnlockAchievement((int)AchivementId.fairyAttack);
+                    _AchievementFairyAttack = false;
+                }
             }
         }
     }
@@ -155,6 +176,11 @@ public class Agent : MonoBehaviour
 
     private void FairyReturn()
     {
+        if (_AchievementFairyDust && !_isOrbiting)
+        {
+            _AchievementFairyDust = false;
+            AchievementManager.Instance.UnlockAchievement((int)AchivementId.fairyDust);
+        }
         _isOrbiting = true;
     }
 
@@ -169,6 +195,11 @@ public class Agent : MonoBehaviour
                 Click();
             };
         }
+    }
+
+    private void DestroyWizzard()
+    {
+        Destroy(gameObject);
     }
 
     #endregion

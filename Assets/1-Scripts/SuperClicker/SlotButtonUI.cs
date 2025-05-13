@@ -64,8 +64,7 @@ public class SlotButtonUI : MonoBehaviour
 
     [Header("Preafb points")] [SerializeField]
     private PointsElementUI _pointsPrefab;
-
-    private GameController _game;
+    
     private int _stock = 5;
     private int _clicksLeft = 0;
     private bool _isUsable = true;
@@ -76,7 +75,6 @@ public class SlotButtonUI : MonoBehaviour
 
     private void Awake()
     {
-        _game = FindObjectOfType<GameController>();
         Reward.ObjectReward = this;
     }
 
@@ -115,16 +113,19 @@ public class SlotButtonUI : MonoBehaviour
     {
         if (_isUsable)
         {
-            _particles.startSpeed = Mathf.Clamp(clickCount / 2, 1, 30);
-            _particles.Emit(Mathf.Clamp(clickCount, 1, 15));
+           
             ClicksLeft -= clickCount;
+            
             RefreshClicksText();
             Camera.main.DOShakePosition(Mathf.Clamp(0.01f * clickCount, 0, 2));
             if (!agent)
             {
-                PointsElementUI newPoints = _game.Pool.GetPoints();
+                PointsElementUI newPoints = GameController.Instance.Pool.GetPoints();
                 newPoints.Initialize(transform);
-                _game.RainParticles();
+                GameController.Instance.RainParticles();
+                GameController.Instance.PlayerSoundController.PlayClickSound();
+                _particles.startSpeed = Mathf.Clamp(clickCount / 2, 1, 30);
+                _particles.Emit(Mathf.Clamp(clickCount, 1, 15));
             }
         }
     }
@@ -143,7 +144,7 @@ public class SlotButtonUI : MonoBehaviour
     private void Click()
     {
         OnSlotClicked?.Invoke(this);
-        int clickRatio = Mathf.RoundToInt(_game.ClickRatio);
+        int clickRatio = Mathf.RoundToInt(GameController.Instance.ClickRatio);
         Click(clickRatio);
     }
 

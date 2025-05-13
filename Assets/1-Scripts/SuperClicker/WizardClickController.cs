@@ -13,6 +13,8 @@ public class WizardClickController : MonoBehaviour
     #region Fields
 
     private BoxCollider2D _boxCollider2D;
+    private static bool _AchievementMagicLife = true;
+    private AudioSource _audioSource;
 
     #endregion
 
@@ -21,12 +23,20 @@ public class WizardClickController : MonoBehaviour
     void Start()
     {
         _boxCollider2D = GetComponent<BoxCollider2D>();
+        _audioSource = GetComponent<AudioSource>();
     }
 
     private void OnMouseDown()
     {
-        Debug.Log("OnMouseDown");
+        
         OnClick?.Invoke();
+        _audioSource.Play();
+        Destroy(_boxCollider2D);
+        if (_AchievementMagicLife)
+        {
+            _AchievementMagicLife = false;
+            AchievementManager.Instance.UnlockAchievement((int)AchivementId.magicLife);
+        }
     }
 
     #endregion

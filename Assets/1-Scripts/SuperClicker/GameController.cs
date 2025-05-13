@@ -4,8 +4,22 @@ using System.Collections;
 using TMPro;
 using DG.Tweening;
 using Unity.VisualScripting;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 using Sequence = DG.Tweening.Sequence;
+
+public enum AchivementId
+{
+    firstClick = 1,
+    firstReward = 2,
+    magicLife = 3,
+    fairyDust = 4,
+    fairyAttack = 5,
+    clickRatio150 = 6,
+    clickRatio300 = 7,
+    clickRatio500 = 8,
+    clickRatio1000 = 9,
+}
 
 public class GameController : MonoBehaviour
 {
@@ -13,6 +27,7 @@ public class GameController : MonoBehaviour
 
     [field: SerializeField] public float ClickRatio { get; set; }
     public static GameController Instance { get; private set; }
+    [field: SerializeField] public PlayerSoundController PlayerSoundController { get; private set; }
     [field: SerializeField] public PoolSystem Pool { get; set; }
 
     #endregion
@@ -24,6 +39,17 @@ public class GameController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _clicksText;
     [SerializeField] private ParticleSystem _particlesRain;
     [SerializeField] private SlotButtonUI[] _slotButtons;
+
+    [FormerlySerializedAs("_audioClip")] [SerializeField]
+    private AudioClip _getPriceSound;
+
+    [SerializeField] private AudioSource _audioSource;
+    private bool _flagAchievementFirstClick = true;
+    private bool _flagAchievementFirstReward = true;
+    private bool _flagAchiviementClickRatio150 = true;
+    private bool _flagAchiviementClickRatio300 = true;
+    private bool _flagAchiviementClickRatio500 = true;
+    private bool _flagAchiviementClickRatio1000 = true;
 
     #endregion
 
@@ -38,13 +64,65 @@ public class GameController : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
     }
 
     void Start()
     {
+        _audioSource = GetComponent<AudioSource>();
         SlotButtonUI.OnSlotReward += GetReward;
-        StartCoroutine(InstanciateWizzard());
+        InvokeRepeating(nameof(InstanciateWizzard),5,30f);
+    }
+
+    void Update()
+    {
+        #region Achievements
+
+        if (_flagAchievementFirstClick)
+        {
+            if (Input.GetMouseButton(0))
+            {
+                AchievementManager.Instance.UnlockAchievement((int)AchivementId.firstClick);
+                _flagAchievementFirstClick = false;
+            }
+        }
+
+        if (_flagAchiviementClickRatio150)
+        {
+            if (ClickRatio > 150)
+            {
+                AchievementManager.Instance.UnlockAchievement((int)AchivementId.clickRatio150);
+                _flagAchiviementClickRatio150 = false;
+            }
+        }
+
+        if (_flagAchiviementClickRatio300)
+        {
+            if (ClickRatio > 300)
+            {
+                AchievementManager.Instance.UnlockAchievement((int)AchivementId.clickRatio300);
+                _flagAchiviementClickRatio300 = false;
+            }
+        }
+
+        if (_flagAchiviementClickRatio500)
+        {
+            if (ClickRatio > 500)
+            {
+                AchievementManager.Instance.UnlockAchievement((int)AchivementId.clickRatio500);
+                _flagAchiviementClickRatio500 = false;
+            }
+        }
+
+        if (_flagAchiviementClickRatio1000)
+        {
+            if (ClickRatio > 1000)
+            {
+                AchievementManager.Instance.UnlockAchievement((int)AchivementId.clickRatio1000);
+                _flagAchiviementClickRatio1000 = false;
+            }
+        }
+
+        #endregion
     }
 
     private void OnDestroy()
@@ -94,6 +172,14 @@ public class GameController : MonoBehaviour
     private void GetReward(Reward reward)
     {
         ShowReward(reward);
+        _audioSource.PlayOneShot(_getPriceSound);
+
+        if (_flagAchievementFirstReward)
+        {
+            _flagAchievementFirstReward = false;
+            AchievementManager.Instance.UnlockAchievement((int)AchivementId.firstReward);
+        }
+
 
         //Apply rewards
         if (reward.RewardType == RewardType.Plus)
@@ -147,16 +233,11 @@ public class GameController : MonoBehaviour
         mySequence.Play();
     }
 
-    IEnumerator InstanciateWizzard()
+    private void InstanciateWizzard()
     {
-        while(true)
-        {
-            Instantiate(_agents[3], GetRandomPosition(), Quaternion.identity); 
-            yield return new WaitForSeconds(2f);
-        }
-            
-        
+        Instantiate(_agents[3], GetRandomPosition(), Quaternion.identity);
     }
+
     private Vector2 GetRandomPosition()
     {
         float cameraHeight = Camera.main.orthographicSize * 2f;
@@ -169,7 +250,7 @@ public class GameController : MonoBehaviour
 
         Vector2 randomPosition = new Vector2(Random.Range(minX, maxX), Random.Range(minY, maxY));
         gameObject.transform.position = randomPosition;
-        
+
         return randomPosition;
     }
 
